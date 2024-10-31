@@ -117,7 +117,7 @@ class A_star:
                         if grid[i][j] == "[yellow]o[/yellow]" and (i, j) not in path:
                             grid[i][j] = "[orange1]-[/orange1]"
                 # Blink the final path
-                for _ in range(6):  
+                for _ in range(8):  
                     for position in path:
                         if grid[position[0]][position[1]] != "💰" and grid[position[0]][position[1]] != "🦜":
                             grid[position[0]][position[1]] = "[grey58].[/grey58]"
@@ -129,8 +129,6 @@ class A_star:
                             grid[position[0]][position[1]] = "[yellow]o[/yellow]"
                     live.update(self.display_grid(grid))
                     time.sleep(0.2)
-
-            time.sleep(0.6)
             self.console.print(f"\n[green]You helped {parrot_name} find his master's money!\nGood work :)[/green]\n")
         else:
             for position in path:
