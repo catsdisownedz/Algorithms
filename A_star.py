@@ -13,7 +13,7 @@ class A_star:
         self.rows = 0
         
     def generate_grid(self):
-        self.console.print("[grey58]Our dear parrot accidentally lost his pirate dad's money,\nhelp him find the shortest way through the maze so that he stop giving him lebb![/grey58]")
+        self.console.print("[grey58]Our dear parrot accidentally lost his pirate dad's money,\nhelp him find the shortest way through the maze so that he doesn't stop giving him lebb![/grey58]")
         self.console.print("\nEnter the number of rows in the maze:")
         self.rows = int(input())
         self.console.print("Enter the number of columns in the maze:")
@@ -51,7 +51,7 @@ class A_star:
         initial_time = 0.4
         starting_point = 10
         increase_interval = 10
-        speed_increase = 0.1
+        speed_increase = 0.15
         
         row_increments = max(0, (self.rows - starting_point) // increase_interval)
         col_increments = max(0, (self.cols - starting_point) // increase_interval)
@@ -59,7 +59,7 @@ class A_star:
         total_increments = row_increments + col_increments
         speed = initial_time * (1 - speed_increase * total_increments)
         
-        min_speed = 0.01
+        min_speed = 0.0001
         speed = max(speed, min_speed)
         
         return speed
