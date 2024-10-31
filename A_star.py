@@ -108,16 +108,50 @@ class A_star:
     def run_search(self):
         grid, start, goal, parrot_name = self.generate_grid()
         self.console.print(f"\n{parrot_name} (🦜) is looking for his master's money (💰)...\n")
-        path, live, final_found = self.a_star_search(grid, start, goal)
+        
+        speed = self.time_distance()
+        path = []
+        final_found = False
 
-        if final_found:
-            with live:
+        with Live(self.display_grid(grid), console=self.console, refresh_per_second=15) as live:
+            open_set = PriorityQueue()
+            open_set.put((0, start))
+            came_from = {}
+            g_score = {start: 0}
+            
+            while not open_set.empty():
+                _, current = open_set.get()
+                
+                if current == goal:
+                    while current in came_from:
+                        path.append(current)
+                        current = came_from[current]
+                    path.reverse()
+                    final_found = True
+                    break
+
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    neighbor = (current[0] + dx, current[1] + dy)
+                    if (0 <= neighbor[0] < len(grid) and 0 <= neighbor[1] < len(grid[0]) 
+                        and grid[neighbor[0]][neighbor[1]] != "[red]x[/red]" and neighbor not in g_score):
+                        tentative_g_score = g_score[current] + 1
+                        if tentative_g_score < g_score.get(neighbor, float('inf')):
+                            came_from[neighbor] = current
+                            g_score[neighbor] = tentative_g_score
+                            f_score = tentative_g_score + self.heuristic(neighbor, goal)
+                            open_set.put((f_score, neighbor))
+
+                            if grid[neighbor[0]][neighbor[1]] == "[grey58].[/grey58]":
+                                grid[neighbor[0]][neighbor[1]] = "[yellow]o[/yellow]"
+                            live.update(self.display_grid(grid))
+                            time.sleep(speed)
+            if final_found:
                 for i in range(len(grid)):
                     for j in range(len(grid[i])):
                         if grid[i][j] == "[yellow]o[/yellow]" and (i, j) not in path:
                             grid[i][j] = "[orange1]-[/orange1]"
-                # Blink the final path
-                for _ in range(8):  
+                
+                for _ in range(8):
                     for position in path:
                         if grid[position[0]][position[1]] != "💰" and grid[position[0]][position[1]] != "🦜":
                             grid[position[0]][position[1]] = "[grey58].[/grey58]"
@@ -129,11 +163,13 @@ class A_star:
                             grid[position[0]][position[1]] = "[yellow]o[/yellow]"
                     live.update(self.display_grid(grid))
                     time.sleep(0.2)
-            self.console.print(f"\n[green]You helped {parrot_name} find his master's money!\nGood work :)[/green]\n")
-        else:
-            for position in path:
-                if grid[position[0]][position[1]] != "💰" and grid[position[0]][position[1]] != "🦜":
-                    grid[position[0]][position[1]] = "[orange1]-[/orange1]"
-            live.update(self.display_grid(grid))
-            time.sleep(0.6)
-            self.console.print("\n[red]Fail.[/]")
+
+                time.sleep(0.6)
+                self.console.print(f"\n[green]You helped {parrot_name} find his master's money!\nGood work :)[/green]\n")
+            else:
+                for position in path:
+                    if grid[position[0]][position[1]] != "💰" and grid[position[0]][position[1]] != "🦜":
+                        grid[position[0]][position[1]] = "[orange1]-[/orange1]"
+                live.update(self.display_grid(grid))
+                time.sleep(0.6)
+                self.console.print("\n[red]Fail.[/]")
