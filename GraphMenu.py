@@ -18,7 +18,16 @@ class GraphMenu:
     @staticmethod
     def run():
         console = Console()
-        
+        def get_valid_input(prompt, valid_type=int, condition=lambda x: True, error_message="Invalid input. Please try again."):
+            while True:
+                try:
+                    user_input = valid_type(input(prompt))
+                    if condition(user_input):
+                        return user_input
+                    else:
+                        console.print(f"[red]{error_message}[/red]")
+                except ValueError:
+                    console.print(f"[red]{error_message}[/red]")
         while True:
             choice = GraphMenu.welcome()
             if choice == 1:
@@ -29,8 +38,8 @@ class GraphMenu:
                 console.print("\nRandomly Generated Tree Structure:")
                 graph.console.print(graph.build_text_tree(graph.root))
 
-                target_number = int(input("\nEnter the number you're looking for in the tree: "))
-                method = int(input("Enter '1' for BFS or '2' for DFS: "))
+                target_number = get_valid_input("\nEnter the number you're looking for in the tree: ", int, lambda x: 0 <= x < node_count, "Invalid target number. Please enter a number between 0 and {node_count - 1}.")
+                method = get_valid_input("Enter '1' for BFS or '2' for DFS: ", int, lambda x: x in [1, 2], "Invalid method. Please enter '1' for BFS or '2' for DFS.")
 
                 console.print("\nTree Structure for Search:")
 

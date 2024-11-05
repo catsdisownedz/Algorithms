@@ -5,6 +5,7 @@ from queue import PriorityQueue
 import random
 import time
 
+#since i can only go in 4 directions, i ll be using the manhattan distance as the heuristic instead of a more accurate one 
 class A_star:
     def __init__(self, console):
         self.console = console
@@ -12,15 +13,23 @@ class A_star:
         self.cols = 0
         self.rows = 0
         
+    def get_valid_input(self, prompt, valid_type=int, condition=lambda x: True, error_message="Invalid input. Please try again."):
+            while True:
+                try:
+                    user_input = valid_type(input(prompt))
+                    if condition(user_input):
+                        return user_input
+                    else:
+                        self.console.print(f"[red]{error_message}[/red]")
+                except ValueError:
+                    self.console.print(f"[red]{error_message}[/red]")
+        
     def generate_grid(self):
         self.console.print("[grey58]Our dear parrot accidentally lost his pirate dad's money,\nhelp him find the shortest way through the maze so that he doesn't stop giving him lebb![/grey58]")
-        self.console.print("\nEnter the number of rows in the maze:")
-        self.rows = int(input())
-        self.console.print("Enter the number of columns in the maze:")
-        self.cols = int(input())
+        self.rows = self.get_valid_input("\nEnter the number of rows in the maze: ", int, lambda x: x > 0, "Invalid number of rows. Please enter a positive integer.")
+        self.cols = self.get_valid_input("Enter the number of columns in the maze: ", int, lambda x: x > 0, "Invalid number of columns. Please enter a positive integer.")
         self.console.print("[grey58]Plot twist, you're the parrots father, how mean![/grey58]")
-        self.console.print("Enter your parrot's name:")
-        parrot_name = input()
+        parrot_name = self.get_valid_input("Enter your parrot's name: ", str, lambda x: len(x) > 0, "Invalid name. Please enter a non-empty string.")
         grid = [["[grey58].[/grey58]" for _ in range(self.cols)] for _ in range(self.rows)]
         
         parrot_pos = (0, random.randint(0, self.cols - 1))
@@ -59,51 +68,11 @@ class A_star:
         total_increments = row_increments + col_increments
         speed = initial_time * (1 - speed_increase * total_increments)
         
-        min_speed = 0.0001
+        min_speed = 0.01
         speed = max(speed, min_speed)
         
         return speed
         
-
-    def a_star_search(self, grid, start, goal):
-        open_set = PriorityQueue()
-        open_set.put((0, start))
-        came_from = {}
-        g_score = {start: 0}
-        path = []
-        live = Live(self.display_grid(grid), console=self.console, refresh_per_second=15)
-        final_found = False
-        speed = self.time_distance()
-        self.console.print(f"[grey58]The speed of the search is {speed} seconds per step[/grey58]")
-        with live:
-            while not open_set.empty():
-                _, current = open_set.get()
-                if current == goal:
-                    while current in came_from:
-                        path.append(current)
-                        current = came_from[current]
-                    path.reverse()
-                    final_found = True
-                    return path,live, final_found
-
-                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                    neighbor = (current[0] + dx, current[1] + dy)
-                    if (0 <= neighbor[0] < len(grid) and 0 <= neighbor[1] < len(grid[0]) 
-                        and grid[neighbor[0]][neighbor[1]] != "[red]x[/red]" and neighbor not in g_score):
-                        tentative_g_score = g_score[current] + 1
-                        if tentative_g_score < g_score.get(neighbor, float('inf')):
-                            came_from[neighbor] = current
-                            g_score[neighbor] = tentative_g_score
-                            f_score = tentative_g_score + self.heuristic(neighbor, goal)
-                            open_set.put((f_score, neighbor))
-
-                            # Mark path being explored with yellow 'o' for coins
-                            if grid[neighbor[0]][neighbor[1]] == "[grey58].[/grey58]":
-                                grid[neighbor[0]][neighbor[1]] = "[yellow]o[/yellow]"
-                            live.update(self.display_grid(grid))
-                            time.sleep(speed)
-
-        return came_from, live, final_found
 
     def run_search(self):
         grid, start, goal, parrot_name = self.generate_grid()
@@ -165,6 +134,7 @@ class A_star:
                     time.sleep(0.2)
 
                 time.sleep(0.6)
+                live.stop()
                 self.console.print(f"\n[green]You helped {parrot_name} find his master's money!\nGood work :)[/green]\n")
             else:
                 for position in path:
@@ -172,4 +142,5 @@ class A_star:
                         grid[position[0]][position[1]] = "[orange1]-[/orange1]"
                 live.update(self.display_grid(grid))
                 time.sleep(0.6)
+                live.stop()
                 self.console.print("\n[red]Fail.[/]")
